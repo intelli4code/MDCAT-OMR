@@ -20,7 +20,7 @@ interface BubbleProps {
 
 const Bubble: React.FC<BubbleProps> = ({ question, option, isSelected, isCorrect, isIncorrect, isKeyCorrect, onClick, disabled }) => {
   const bubbleClasses = cn(
-    'flex items-center justify-center w-8 h-8 rounded-full border-2 transition-all duration-150',
+    'flex items-center justify-center w-7 h-7 rounded-full border-2 transition-all duration-150',
     'font-mono font-bold text-sm',
     disabled 
       ? 'cursor-not-allowed bg-muted text-muted-foreground border-muted'
@@ -56,6 +56,7 @@ interface OmrSheetProps {
   answers: AnswerMap;
   onBubbleClick: (question: number, option: Answer) => void;
   mode: AppMode;
+  isReviewing: boolean;
   quizResult: { correct: number; incorrect: number; total: number } | null;
   masterKeyAnswers?: { [key: number]: Answer };
 }
@@ -65,6 +66,7 @@ export function OmrSheet({
   answers,
   onBubbleClick,
   mode,
+  isReviewing,
   quizResult,
   masterKeyAnswers,
 }: OmrSheetProps) {
@@ -81,7 +83,7 @@ export function OmrSheet({
     return cols;
   }, [questionCount]);
 
-  const isDisabled = mode === 'view';
+  const isDisabled = mode === 'view' && !isReviewing;
 
   return (
     <Card className="shadow-lg">
@@ -91,7 +93,7 @@ export function OmrSheet({
             <div key={colIndex} className="flex flex-col gap-2">
               <div className="flex justify-around items-center sticky top-0 bg-card z-10 py-2 border-b">
                  <span className="font-bold text-sm text-muted-foreground">#</span>
-                 {options.map(opt => <span key={opt} className="font-bold text-sm w-8 text-center text-muted-foreground">{opt}</span>)}
+                 {options.map(opt => <span key={opt} className="font-bold text-sm w-7 text-center text-muted-foreground">{opt}</span>)}
               </div>
               <div className="flex flex-col gap-3 pt-2">
                 {col.map((q) => {
@@ -103,9 +105,9 @@ export function OmrSheet({
                       <div className="font-bold text-sm w-6 text-center">{q}</div>
                       {options.map((opt) => {
                         const isSelected = studentAnswer === opt;
-                        const isKeyCorrect = quizResult ? keyAnswer === opt : false;
-                        const isCorrect = quizResult ? isSelected && studentAnswer === keyAnswer : undefined;
-                        const isIncorrect = quizResult ? isSelected && studentAnswer !== keyAnswer : undefined;
+                        const isKeyCorrect = isReviewing ? keyAnswer === opt : false;
+                        const isCorrect = isReviewing ? isSelected && studentAnswer === keyAnswer : undefined;
+                        const isIncorrect = isReviewing ? isSelected && studentAnswer !== keyAnswer : undefined;
 
                         return (
                           <Bubble

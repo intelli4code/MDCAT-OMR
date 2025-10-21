@@ -30,6 +30,7 @@ export default function OmrApp() {
   // Quiz State
   const [masterKey, setMasterKey] = useState<AnswerKey | null>(null);
   const [quizResult, setQuizResult] = useState<{ correct: number; incorrect: number; total: number } | null>(null);
+  const [isReviewing, setIsReviewing] = useState(false);
 
   // UI State
   const [isAuthModalOpen, setAuthModalOpen] = useState(false);
@@ -38,7 +39,7 @@ export default function OmrApp() {
   const [keyToDelete, setKeyToDelete] = useState<AnswerKey | null>(null);
 
   const handleBubbleClick = useCallback((question: number, option: Answer) => {
-    if (mode === 'view') return;
+    if (mode === 'view' && !isReviewing) return;
 
     setAnswers(prev => {
       const newAnswers = new Map(prev);
@@ -49,11 +50,15 @@ export default function OmrApp() {
       }
       return newAnswers;
     });
-  }, [mode]);
+  }, [mode, isReviewing]);
   
-  const resetSheet = () => {
+  const resetSheet = (fullReset = true) => {
     setAnswers(new Map());
     setQuizResult(null);
+    if(fullReset) {
+      setMasterKey(null);
+      setIsReviewing(false);
+    }
   };
 
   const handleSetQuestionCount = (count: number) => {
@@ -67,10 +72,7 @@ export default function OmrApp() {
       return;
     }
     setMode(newMode);
-    setMasterKey(null);
-    if(newMode !== 'quiz') {
-      setQuizResult(null);
-    }
+    resetSheet();
   };
 
   const handleSaveKey = async (keyName: string) => {
@@ -146,7 +148,13 @@ export default function OmrApp() {
     }
     setQuizResult({ correct, incorrect, total });
     setMode('view');
+    setIsReviewing(true);
   };
+  
+  const handleScoreModalClose = () => {
+    setQuizResult(null);
+    // Don't reset the sheet, keep it in review mode
+  }
 
   return (
     <div className="flex flex-col min-h-screen bg-background font-body">
@@ -171,6 +179,7 @@ export default function OmrApp() {
               answers={answers}
               onBubbleClick={handleBubbleClick}
               mode={mode}
+              isReviewing={isReviewing}
               quizResult={quizResult}
               masterKeyAnswers={masterKey?.answers}
             />
@@ -197,7 +206,7 @@ export default function OmrApp() {
         <ScoreModal
           result={quizResult}
           isOpen={quizResult !== null}
-          onOpenChange={() => { if(quizResult) setQuizResult(null); }}
+          onOpenChange={(open) => !open && handleScoreModalClose()}
         />
       )}
 
