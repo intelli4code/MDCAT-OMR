@@ -68,7 +68,7 @@ export function InfoPanel() {
         </CardContent>
       </Card>
 
-      <Alert>
+      <Alert variant="destructive">
         <Info className="h-4 w-4" />
         <AlertTitle>How to Use OMR Quiz Master</AlertTitle>
         <AlertDescription className="space-y-2">

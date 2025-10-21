@@ -2,8 +2,9 @@
 
 import { useAuth } from "@/hooks/use-auth";
 import { Button } from "./ui/button";
-import { LogIn, LogOut, User as UserIcon } from "lucide-react";
+import { LogIn, LogOut } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
+import { ThemeToggle } from "./theme-toggle";
 
 interface HeaderProps {
   onAuthClick: () => void;
@@ -24,6 +25,7 @@ export function Header({ onAuthClick }: HeaderProps) {
           OMR Quiz Master
         </h1>
         <div className="flex items-center gap-4">
+          <ThemeToggle />
           {loading ? (
             <div className="h-9 w-24 animate-pulse rounded-md bg-muted" />
           ) : isAuthenticated ? (
