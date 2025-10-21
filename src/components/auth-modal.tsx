@@ -4,9 +4,10 @@ import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { createUserWithEmailAndPassword, signInWithEmailAndPassword } from 'firebase/auth';
+import { createUserWithEmailAndPassword, signInWithEmailAndPassword, GoogleAuthProvider, signInWithPopup, getAdditionalUserInfo } from 'firebase/auth';
 import { auth, db } from '@/lib/firebase';
 import { doc, setDoc } from 'firebase/firestore';
+import { GoogleIcon } from './icons';
 
 import {
   Dialog,
@@ -22,6 +23,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '
 import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
 import { Alert, AlertDescription, AlertTitle } from './ui/alert';
 import { AlertCircle } from 'lucide-react';
+import { Separator } from './ui/separator';
 
 interface AuthModalProps {
   isOpen: boolean;
@@ -43,7 +45,7 @@ export function AuthModal({ isOpen, onOpenChange }: AuthModalProps) {
     defaultValues: { email: '', password: '' },
   });
 
-  const handleAuth = async (values: FormValues, isSignUp: boolean) => {
+  const handleEmailAuth = async (values: FormValues, isSignUp: boolean) => {
     setLoading(true);
     setError(null);
     try {
@@ -52,7 +54,7 @@ export function AuthModal({ isOpen, onOpenChange }: AuthModalProps) {
         : await signInWithEmailAndPassword(auth, values.email, values.password);
       
       if (isSignUp) {
-        // Create user profile doc as per prompt
+        // Create user profile doc
         const appId = process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID;
         const user = userCredential.user;
         if(appId && user) {
@@ -70,23 +72,62 @@ export function AuthModal({ isOpen, onOpenChange }: AuthModalProps) {
     }
   };
 
+  const handleGoogleSignIn = async () => {
+    setLoading(true);
+    setError(null);
+    const provider = new GoogleAuthProvider();
+    try {
+        const result = await signInWithPopup(auth, provider);
+        const additionalInfo = getAdditionalUserInfo(result);
+        const user = result.user;
+
+        if (additionalInfo?.isNewUser) {
+            const appId = process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID;
+            if(appId && user) {
+                const userProfileRef = doc(db, 'artifacts', appId, 'users', user.uid, 'profile');
+                await setDoc(userProfileRef, { email: user.email, createdAt: new Date().toISOString() });
+            }
+        }
+        onOpenChange(false);
+        form.reset();
+    } catch (err: any) {
+      setError(err.message || 'An unexpected error occurred.');
+    } finally {
+        setLoading(false);
+    }
+  }
+
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[425px]">
-        <Tabs defaultValue="login" className="w-full">
-          <DialogHeader>
-            <DialogTitle className="text-center text-2xl">OMR Quiz Master</DialogTitle>
-            <DialogDescription className="text-center">
+        <DialogHeader className="text-center">
+            <DialogTitle className="text-2xl">OMR Quiz Master</DialogTitle>
+            <DialogDescription>
               Sign in or create an account to save your answer keys.
             </DialogDescription>
-            <TabsList className="grid w-full grid-cols-2 mt-4">
+        </DialogHeader>
+
+        <div className="py-2 px-6">
+            <Button variant="outline" className="w-full" onClick={handleGoogleSignIn} disabled={loading}>
+                <GoogleIcon className="mr-2 h-5 w-5" />
+                Sign in with Google
+            </Button>
+        </div>
+
+        <div className="flex items-center px-6">
+            <Separator className="flex-1" />
+            <span className="px-4 text-xs text-muted-foreground">OR</span>
+            <Separator className="flex-1" />
+        </div>
+
+        <Tabs defaultValue="login" className="w-full px-6 pb-6">
+            <TabsList className="grid w-full grid-cols-2">
               <TabsTrigger value="login">Login</TabsTrigger>
               <TabsTrigger value="signup">Sign Up</TabsTrigger>
             </TabsList>
-          </DialogHeader>
 
           <Form {...form}>
-            <form onSubmit={form.handleSubmit((values) => handleAuth(values, false))}>
+            <form onSubmit={form.handleSubmit((values) => handleEmailAuth(values, false))}>
               <TabsContent value="login">
                 <div className="space-y-4 py-4">
                   {error && <AuthError message={error} />}
@@ -102,7 +143,7 @@ export function AuthModal({ isOpen, onOpenChange }: AuthModalProps) {
           </Form>
 
           <Form {...form}>
-            <form onSubmit={form.handleSubmit((values) => handleAuth(values, true))}>
+            <form onSubmit={form.handleSubmit((values) => handleEmailAuth(values, true))}>
               <TabsContent value="signup">
                 <div className="space-y-4 py-4">
                   {error && <AuthError message={error} />}
