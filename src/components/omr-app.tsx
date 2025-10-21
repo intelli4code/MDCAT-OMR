@@ -5,6 +5,7 @@ import { useAuth } from '@/hooks/use-auth';
 import type { Answer, AnswerKey, AnswerMap } from '@/lib/types';
 import { saveNewKey, loadSavedKeys, deleteKey, importKeys } from '@/lib/keys';
 import { useToast } from '@/hooks/use-toast';
+import { Timestamp } from 'firebase/firestore';
 
 import { Header } from './header';
 import { ControlPanel } from './control-panel';
@@ -54,10 +55,10 @@ export default function OmrApp() {
   
   const resetSheet = (fullReset = true) => {
     setAnswers(new Map());
-    setQuizResult(null);
-    if(fullReset) {
+    if (fullReset) {
       setMasterKey(null);
       setIsReviewing(false);
+      setQuizResult(null);
     }
   };
 
@@ -102,6 +103,21 @@ export default function OmrApp() {
     }
     setKeyModalOpen(false);
   };
+  
+  const handleStartQuizFromEditor = () => {
+    if (mode !== 'key_edit' || answers.size === 0) return;
+    const currentKey: AnswerKey = {
+        id: 'temp-key',
+        keyName: 'Unsaved Key',
+        questionCount: questionCount,
+        answers: Object.fromEntries(answers),
+        createdAt: Timestamp.now(),
+    };
+    setMasterKey(currentKey);
+    resetSheet(false);
+    setMode('quiz');
+    toast({ title: "Quiz Mode Started", description: `Using current unsaved key.` });
+  }
 
   const openDeleteKeyDialog = (key: AnswerKey) => {
     setKeyToDelete(key);
@@ -168,8 +184,10 @@ export default function OmrApp() {
           onModeChange={handleModeChange}
           onManageKeys={() => setKeyModalOpen(true)}
           onSaveKey={() => setDialogState('saveKey')}
+          onStartQuiz={handleStartQuizFromEditor}
           onEndQuiz={handleEndQuiz}
           masterKeyName={masterKey?.keyName}
+          hasAnswers={answers.size > 0}
         />
 
         <div className="mt-6 grid grid-cols-1 lg:grid-cols-3 xl:grid-cols-4 gap-8">

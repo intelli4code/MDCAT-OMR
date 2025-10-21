@@ -16,8 +16,10 @@ interface ControlPanelProps {
   onModeChange: (mode: AppMode) => void;
   onManageKeys: () => void;
   onSaveKey: () => void;
+  onStartQuiz: () => void;
   onEndQuiz: () => void;
   masterKeyName?: string | null;
+  hasAnswers: boolean;
 }
 
 export function ControlPanel({
@@ -27,8 +29,10 @@ export function ControlPanel({
   onModeChange,
   onManageKeys,
   onSaveKey,
+  onStartQuiz,
   onEndQuiz,
   masterKeyName,
+  hasAnswers,
 }: ControlPanelProps) {
   const { isAuthenticated } = useAuth();
 
@@ -69,11 +73,11 @@ export function ControlPanel({
 
             <Button
               variant={mode === 'quiz' ? 'destructive' : 'outline'}
-              onClick={onEndQuiz}
-              disabled={mode !== 'quiz'}
+              onClick={mode === 'quiz' ? onEndQuiz : onStartQuiz}
+              disabled={(mode !== 'quiz' && (mode !== 'key_edit' || !hasAnswers))}
             >
               <School className="mr-2" />
-              {mode === 'quiz' ? 'End Quiz' : 'Quiz Mode'}
+              {mode === 'quiz' ? 'End Quiz' : 'Start Quiz'}
             </Button>
              
             {mode === 'quiz' && masterKeyName && (
