@@ -58,7 +58,7 @@ export function AuthModal({ isOpen, onOpenChange }: AuthModalProps) {
         const appId = process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID;
         const user = userCredential.user;
         if(appId && user) {
-            const userProfileRef = doc(db, 'artifacts', appId, 'users', user.uid, 'profile');
+            const userProfileRef = doc(db, 'artifacts', appId, 'users', user.uid);
             await setDoc(userProfileRef, { email: user.email, createdAt: new Date().toISOString() });
         }
       }
@@ -84,7 +84,7 @@ export function AuthModal({ isOpen, onOpenChange }: AuthModalProps) {
         if (additionalInfo?.isNewUser) {
             const appId = process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID;
             if(appId && user) {
-                const userProfileRef = doc(db, 'artifacts', appId, 'users', user.uid, 'profile');
+                const userProfileRef = doc(db, 'artifacts', appId, 'users', user.uid);
                 await setDoc(userProfileRef, { email: user.email, createdAt: new Date().toISOString() });
             }
         }
