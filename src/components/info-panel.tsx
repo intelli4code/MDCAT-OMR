@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
 import { Input } from './ui/input';
 import { cn } from '@/lib/utils';
 import { Alert, AlertDescription, AlertTitle } from './ui/alert';
-import { Terminal } from 'lucide-react';
+import { Info, Terminal } from 'lucide-react';
 
 const RollNoGrid = () => {
   const [selections, setSelections] = useState<Map<number, number>>(new Map());
@@ -68,15 +68,15 @@ export function InfoPanel() {
         </CardContent>
       </Card>
 
-      <Alert variant="destructive">
-        <Terminal className="h-4 w-4" />
-        <AlertTitle>Instructions</AlertTitle>
-        <AlertDescription className="space-y-2 text-destructive/90">
-          <p>1. Use BLUE or BLACK BALL POINT PEN only.</p>
-          <p>2. CORRECT EXAMPLE: &bull;</p>
-          <p>3. INCORRECT EXAMPLES: &bigcirc; &times; &#10003;</p>
-          <p>4. Darken only one bubble for each question.</p>
-          <p>5. Do not use markers or white fluid on the sheet.</p>
+      <Alert>
+        <Info className="h-4 w-4" />
+        <AlertTitle>How to Use OMR Quiz Master</AlertTitle>
+        <AlertDescription className="space-y-2">
+          <p><strong>1. Login:</strong> Sign in to save, manage, and sync your answer keys across devices.</p>
+          <p><strong>2. Create a Key:</strong> Click 'Key Editor' to manually create an answer key by selecting the correct bubbles. Click 'Save Key' when you're done.</p>
+          <p><strong>3. Start a Quiz:</strong> Click 'Manage Keys', choose a saved key, and click 'Quiz' to start a new session.</p>
+          <p><strong>4. Take the Quiz:</strong> Fill in the OMR sheet. When you're finished, click 'End Quiz'.</p>
+          <p><strong>5. Review Results:</strong> After ending the quiz, your score will appear. Close the popup to review your answers on the sheet. Correct answers are outlined in green, and your incorrect selections are highlighted in red.</p>
         </AlertDescription>
       </Alert>
     </div>
